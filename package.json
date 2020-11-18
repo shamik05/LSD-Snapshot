@@ -1,0 +1,34 @@
+{
+  "name": "lsd-snapshot",
+  "version": "1.0.0",
+  "description": "Bitcoin tracker and news website",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shamik05/LSD-Snapshot.git"
+  },
+  "keywords": [
+    "bitcoin",
+    "newsapi",
+    "spreaker",
+    "darkmode",
+    "jquery",
+    "third-party"
+  ],
+  "author": "Dina Liubarets, Liam Mackinnon, Shamik Haldar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shamik05/LSD-Snapshot/issues"
+  },
+  "homepage": "https://github.com/shamik05/LSD-Snapshot#readme",
+  "dependencies": {
+    "compression": "^1.7.4",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.13.0"
+  }
+}
