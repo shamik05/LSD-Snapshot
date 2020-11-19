@@ -53,20 +53,11 @@ header table {
   width: 100%;
 }
 
-#volume {
-  /* padding-right: 100px; */
-}
-
 .capital {
   text-transform: capitalize;
 }
 /* dropdown menu */
 .mui-btn--primary {
-  /* background-image: linear-gradient(
-    to top,
-    #09203f 0%,
-    #537895 100%
-  ) !important; */
   padding-left: 2em;
 }
 
@@ -157,7 +148,7 @@ a {
 }
 
 
-.fa-bitcoin {
+.fa-bitcoin, .fa-newspaper, .fa-bar-chart, .fa-clock {
   color: goldenrod;
 }
 
