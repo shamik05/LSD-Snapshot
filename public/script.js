@@ -1,3 +1,7 @@
+/* eslint-disable no-multi-assign */
+/* eslint-disable space-before-function-paren */
+/* eslint-disable prefer-template */
+/* eslint-disable camelcase */
 /* eslint-disable no-undef */
 /* eslint-disable no-plusplus */
 /* eslint-disable max-len */
