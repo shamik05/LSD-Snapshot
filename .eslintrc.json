@@ -19,6 +19,7 @@
         "no-console": "off",
         "no-unused-expressions": ["error", { "allowShortCircuit": true, "allowTaggedTemplates": true, "allowTernary": true}],
         "func-names": ["error", "never"],
-        "no-restricted-syntax": ["error", "1"]
-    }
+        "no-restricted-syntax": ["error", "1"],
+    },
+    "plugins": ["import"]
 }
