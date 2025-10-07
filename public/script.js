@@ -125,13 +125,11 @@ $(document).ready(() => {
 
   // API for news
   function getNews(coin) {
-    const urlNews = `https://cors-anywhere.herokuapp.com/https://newsapi.org/v2/everything?language=en&q=${coin}+crypto&from=${today}&sortBy=publishedAt&apiKey=46f225ffb36d463dbf82d74ee65a1700`;
-
     $.ajax({
-      url: urlNews,
+      url: `/api/news?q=${coin}`,
       method: "GET",
     }).then((response) => {
-      // console.log(response)
+      // console.log(response);
       for (let i = 0; i < 6; i++) {
         const { title } = response.articles[i];
         const { description } = response.articles[i];
@@ -166,10 +164,13 @@ $(document).ready(() => {
   }
 
   // function getting historical data price
-  function getHistorical(queryURL) {
+  function getHistorical(coin, intervalString, startTime, currentTime) {
     $.ajax({
-      url: queryURL,
+      url: `/api/coincap/history/${coin}?interval=${intervalString}&start=${startTime}&end=${currentTime}`,
       method: "GET",
+      headers: {
+        Authorization: "Bearer ddb16c976876f5770deb842eca6fd7dc399f0139bec1c6f4d314bf24639eb8c3",
+      },
     }).then((response) => {
       const { data } = response;
       const delta = data.length - arr.length;
@@ -186,9 +187,9 @@ $(document).ready(() => {
   }
 
   // function for live price
-  function getLivePrice(queryURL) {
+  function getLivePrice(coin) {
     $.ajax({
-      url: queryURL,
+      url: `/api/coincap/rates/${coin}`,
       method: "GET",
     }).then((response) => {
       const price = parseFloat(parseFloat(response.data.rateUsd).toFixed(3));
@@ -217,21 +218,19 @@ $(document).ready(() => {
 
     const currentTime = Date.now();
     const startTime = currentTime - 600000 * intervalNum * 2;
-    const queryHistorical = `https://api.coincap.io/v2/assets/${coin}/history?interval=${intervalString}&start=${startTime}&end=${currentTime}`;
-    const queryLive = `https://api.coincap.io/v2/rates/${coin}`;
 
-    getHistorical(queryHistorical);
-    getLivePrice(queryLive);
+    getHistorical(coin, intervalString, startTime, currentTime);
+    getLivePrice(coin);
     getNews(coin);
 
     clearInterval(historicalInterval);
     clearInterval(liveInterval);
 
     historicalInterval = setInterval(() => {
-      getHistorical(queryHistorical);
+      getHistorical(coin, intervalString, startTime, currentTime);
     }, intervalNum * 60000);
     liveInterval = setInterval(() => {
-      getLivePrice(queryLive);
+      getLivePrice(coin);
     }, 60000);
   };
 
@@ -277,44 +276,37 @@ $(document).ready(() => {
     const name = $("#inputName").val();
     const email = $("#inputEmail").val();
     const message = $("#inputMessage").val();
-
+  
     if (name === "" || email === "" || message === "") {
-    // console.log("fail");
       return false;
     }
+    
     e.preventDefault();
     const status = document.getElementById("my-form-status");
-    const url = "https://formspree.io/xwkrpzap";
-    const method = "POST";
-    const data = new FormData();
-    data.append("email", email);
-    data.append("name", name);
-    data.append("message", message);
-
-    const xhr = new XMLHttpRequest();
-    xhr.open(method, url);
-    xhr.setRequestHeader("Accept", "application/json");
-    xhr.onreadystatechange = function () {
-      if (xhr.readyState !== XMLHttpRequest.DONE) return;
-      if (xhr.status === 200) {
-        // console.log("success");
-        status.innerHTML = "Thanks! Your message was send.";
-        if (volStatus) {
-          $("#soundEmail").get(0).play();
-        }
-      } else {
-        // console.log("error");
-        status.innerHTML = "Oops! There was a problem. Please enter a valid email address";
+    
+    $.ajax({
+      url: "/api/contact",
+      method: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({ name, email, message }),
+    }).then((response) => {
+      status.innerHTML = "Thanks! Your message was sent.";
+      if (volStatus) {
+        $("#soundEmail").get(0).play();
       }
-    };
-    return xhr.send(data);
+      // Clear form
+      $("#inputName").val("");
+      $("#inputEmail").val("");
+      $("#inputMessage").val("");
+    }).fail((error) => {
+      status.innerHTML = "Oops! There was a problem. Please enter a valid email address";
+      console.error("Contact Form Error:", error);
+    });
   });
 
   // GMAIL News Modal
   $("#newsBtn").on("click", (event) => {
     event.preventDefault();
-    // const key = "c7607f7ed4342aee28bd3bb885a9faac";
-    const key2 = "f0307841dc1bad77a771b46d5faa4fbc";
     let search = massPopChart.options.title.text;
 
     if (search === "WAVES") {
@@ -330,7 +322,7 @@ $(document).ready(() => {
     const queryURL = `https://gnews.io/api/v3/search?q=${search}&token=${key2}`;
 
     $.ajax({
-      url: queryURL,
+      url: `/api/gnews?q=${search}`,
       method: "GET",
     }).then((response) => {
       // console.log(response)
