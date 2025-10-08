@@ -3,6 +3,7 @@ const compression = require("compression");
 const morgan = require("morgan");
 const path = require("path");
 const axios = require("axios");
+const nodemailer = require("nodemailer");
 require("dotenv").config();
 
 const PORT = process.env.PORT || 8080;
@@ -14,10 +15,20 @@ app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Environment variables for your API tokens
-const { COINCAP_API_KEY } = process.env;
-const { NEWS_API_KEY } = process.env;
-const { GNEWS_API_KEY } = process.env;
+const { COINCAP_API_KEY, NEWS_API_KEY, GNEWS_API_KEY, SES_USER, SES_PASS } = process.env;
+
+const transport = nodemailer.createTransport({
+  host: "email-smtp.us-east-2.amazonaws.com",
+  port: 587,
+  secure: false,
+  auth: {
+      user: SES_USER,
+      pass: SES_PASS
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
 
 app.get("/api/coincap/history/:coin", async (req, res) => {
   try {
@@ -67,7 +78,6 @@ app.get("/api/coincap/rates/:coin", async (req, res) => {
   }
 });
 
-// NewsAPI.org - Crypto News
 app.get("/api/news", async (req, res) => {
   try {
     const { q } = req.query;
@@ -94,7 +104,6 @@ app.get("/api/news", async (req, res) => {
   }
 });
 
-// GNews API - Modal News
 app.get("/api/gnews", async (req, res) => {
   try {
     const { q } = req.query;
@@ -121,27 +130,37 @@ app.get("/api/gnews", async (req, res) => {
   }
 });
 
-// Formspree Contact Form Proxy (if needed)
 app.post("/api/contact", async (req, res) => {
   try {
+
+    // try {
+    //   await transport.verify();
+    //   console.log("Server is ready to take our messages");
+    // } catch (err) {
+    //   console.error("Verification failed", err);
+    // }
+
     const { name, email, message } = req.body;
-
-    const response = await axios.post(
-      "https://formspree.io/f/xwkrpzap",
-      {
-        name,
-        email,
-        message,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-      },
-    );
-
-    res.json({ success: true, message: "Message sent successfully!" });
+    
+    const info = await transport.sendMail({
+      from: '"LSDContact Form" <shamikhaldar05@gmail.com>',
+      to: "shamikhaldar05@gmail.com",
+      subject: "LSD Contact Form Submission",
+      text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
+      html: `
+        <h3>New Contact Form Submission</h3>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Message:</strong> ${message}</p>
+      `
+    });
+    
+    console.log('Email sent successfully:', info.messageId);
+    res.json({ 
+      success: true, 
+      message: 'Email sent successfully',
+      messageId: info.messageId 
+    });
   } catch (error) {
     console.error("Contact Form Error:", error.response?.data || error.message);
     res.status(500).json({
@@ -151,7 +170,6 @@ app.post("/api/contact", async (req, res) => {
   }
 });
 
-// Health check endpoint
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
